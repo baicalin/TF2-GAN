@@ -2,7 +2,7 @@ import os
 import time
 
 import tensorflow as tf  # TF 2.0
-# import tensorflow_datasets as tfds
+import tensorflow_datasets as tfds
 
 from model import Generator, Critic
 from utils import discriminator_loss, generator_loss, save_imgs, random_weighted_average, normalize
@@ -10,8 +10,13 @@ from utils import discriminator_loss, generator_loss, save_imgs, random_weighted
 
 def train():
 
-    data, info = tf.load("mnist", with_info=True, data_dir='/data/tensorflow_datasets')
-    train_data = data['train']
+    mnist = tf.keras.datasets.mnist
+
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train, x_test = x_train / 255.0, x_test / 255.0
+
+    # data, info = tf.load("mnist", with_info=True, data_dir='/data/tensorflow_datasets')
+    train_data = x_train
 
     if not os.path.exists('./images'):
         os.makedirs('./images')
