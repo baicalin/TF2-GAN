@@ -2,7 +2,7 @@ import os
 import time
 
 import tensorflow as tf  # TF 2.0
-import tensorflow_datasets as tfds
+# import tensorflow_datasets as tfds
 
 from model import Generator, Critic
 from utils import discriminator_loss, generator_loss, save_imgs, random_weighted_average, normalize
@@ -10,7 +10,7 @@ from utils import discriminator_loss, generator_loss, save_imgs, random_weighted
 
 def train():
 
-    data, info = tfds.load("mnist", with_info=True, data_dir='/data/tensorflow_datasets')
+    data, info = tf.load("mnist", with_info=True, data_dir='/data/tensorflow_datasets')
     train_data = data['train']
 
     if not os.path.exists('./images'):
@@ -24,11 +24,16 @@ def train():
     save_interval = 50
     n_critic = 5
 
-    generator = Generator()
-    discriminator = Critic()
+    strategy = tf.distribute.MirroredStrategy()
+    print('Number of devies: {}'.format(strategy.num_replicas_in_sync))
 
-    gen_optimizer = tf.keras.optimizers.Adam(0.0001, 0.5, 0.9)
-    disc_optimizer = tf.keras.optimizers.Adam(0.0001, 0.5, 0.9)
+    with strategy.scope():
+
+        generator = Generator()
+        discriminator = Critic()
+
+        gen_optimizer = tf.keras.optimizers.Adam(0.0001, 0.5, 0.9)
+        disc_optimizer = tf.keras.optimizers.Adam(0.0001, 0.5, 0.9)
 
     train_dataset = train_data.map(normalize).shuffle(buffer_size).batch(batch_size)
 
